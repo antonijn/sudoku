@@ -422,9 +422,8 @@ int input_sku_number(sku_board_ex *sku, int row, int col, int number, bool casca
 			if (mask_cell_opts(sku, seg_row*3 + i, seg_col*3 + j, ~num_bit) < 0)
 				return -1;
 
-	if (opts.smart_segments) {
-		rethink_segments(sku, seg_row, seg_col, number, cascade);
-	}
+	if (opts.smart_segments && rethink_segments(sku, seg_row, seg_col, number, cascade) < 0)
+		return -1;
 
 	return 0;
 }
