@@ -7,8 +7,8 @@
 #include <string.h>
 #include <ctype.h>
 
-int popcnt(unsigned u);
-int lsb(unsigned u);
+static int popcnt(unsigned u);
+static int lsb(unsigned u);
 
 typedef int sku_board[9][9];
 
@@ -20,7 +20,7 @@ typedef struct {
 	unsigned left_in_col[9];
 } sku_board_ex;
 
-struct {
+static struct {
 	bool verbose, smart_segments;
 }
 opts = {
@@ -28,10 +28,9 @@ opts = {
 	.smart_segments = true
 };
 
-void clear_sku(sku_board *sku);
-int load_sku_file(sku_board *sku, FILE *f);
-void fprint_sku_board(FILE *f, sku_board *sku);
-int solve_sku(sku_board *sku);
+static int load_sku_file(sku_board *sku, FILE *f);
+static void fprint_sku_board(FILE *f, sku_board *sku);
+static int solve_sku(sku_board *sku);
 
 int
 main(int argc, char **argv)
@@ -67,7 +66,7 @@ main(int argc, char **argv)
 	return 0;
 }
 
-int
+static int
 popcnt(unsigned u)
 {
 	int res = 0;
@@ -80,7 +79,7 @@ popcnt(unsigned u)
 	return res;
 }
 
-int
+static int
 lsb(unsigned u)
 {
 	for (int res = 1; u != 0; ++res) {
@@ -93,16 +92,12 @@ lsb(unsigned u)
 	return 0;
 }
 
-void clear_sku(sku_board *sku)
+static int load_sku_row(int *row, FILE *f);
+
+static int
+load_sku_file(sku_board *sku, FILE *f)
 {
 	memset(sku, 0, sizeof(sku_board));
-}
-
-int load_sku_row(int *row, FILE *f);
-
-int load_sku_file(sku_board *sku, FILE *f)
-{
-	clear_sku(sku);
 
 	for (int row = 0; row < 9; ++row)
 		if (load_sku_row((*sku)[row], f) < 0)
@@ -111,7 +106,8 @@ int load_sku_file(sku_board *sku, FILE *f)
 	return 0;
 }
 
-int load_sku_row(int *row, FILE *f)
+static int
+load_sku_row(int *row, FILE *f)
 {
 	int ch;
 
@@ -134,7 +130,7 @@ int load_sku_row(int *row, FILE *f)
 	return 0;
 }
 
-void
+static void
 fprint_sku_board(FILE *f, sku_board *sku)
 {
 	for (int i = 0; i < 9; ++i) {
@@ -149,20 +145,21 @@ fprint_sku_board(FILE *f, sku_board *sku)
 	}
 }
 
-bool is_sku_full(sku_board *sku);
-bool sku_has_contradiction(sku_board_ex *sku, int *row, int *col);
-int solve_sku_ex(sku_board_ex *sku);
-int make_sku_board_ex(sku_board_ex *res, sku_board *orig);
-int mask_cell_opts(sku_board_ex *sku, int row, int col, unsigned mask);
-int input_sku_number(sku_board_ex *sku, int row, int col, int number, bool cascade);
-int rethink_segments(sku_board_ex *sku, int seg_row_origin, int seg_col_origin, int number, bool cascade);
-int rethink_segment(sku_board_ex *sku, int seg_row, int seg_col, int number, bool cascade);
-int find_most_certain_cell(sku_board_ex *sku, int *row, int *col);
-void sku_log(const char *fmt, ...);
+static bool is_sku_full(sku_board *sku);
+static bool sku_has_contradiction(sku_board_ex *sku, int *row, int *col);
+static int solve_sku_ex(sku_board_ex *sku);
+static int make_sku_board_ex(sku_board_ex *res, sku_board *orig);
+static int mask_cell_opts(sku_board_ex *sku, int row, int col, unsigned mask);
+static int input_sku_number(sku_board_ex *sku, int row, int col, int number, bool cascade);
+static int rethink_segments(sku_board_ex *sku, int seg_row_origin, int seg_col_origin, int number, bool cascade);
+static int rethink_segment(sku_board_ex *sku, int seg_row, int seg_col, int number, bool cascade);
+static int find_most_certain_cell(sku_board_ex *sku, int *row, int *col);
+static void sku_log(const char *fmt, ...);
 
-int log_depth = 0;
+static int log_depth = 0;
 
-int solve_sku(sku_board *board)
+static int
+solve_sku(sku_board *board)
 {
 	sku_board_ex sku;
 	if (make_sku_board_ex(&sku, board) < 0)
@@ -177,7 +174,7 @@ int solve_sku(sku_board *board)
 	return 0;
 }
 
-bool
+static bool
 is_sku_full(sku_board *sku)
 {
 	for (int i = 0; i < 9; ++i)
@@ -188,7 +185,7 @@ is_sku_full(sku_board *sku)
 	return true;
 }
 
-bool
+static bool
 sku_has_contradiction(sku_board_ex *sku, int *row, int *col)
 {
 	for (*row = 0; *row < 9; ++*row)
@@ -199,7 +196,7 @@ sku_has_contradiction(sku_board_ex *sku, int *row, int *col)
 	return false;
 }
 
-int
+static int
 solve_sku_ex(sku_board_ex *sku)
 {
 	int row, col;
@@ -250,7 +247,8 @@ solve_sku_ex(sku_board_ex *sku)
 	return -1;
 }
 
-void clear_sku_board_ex(sku_board_ex *res)
+static void
+clear_sku_board_ex(sku_board_ex *res)
 {
 	unsigned all_nums = 0x3FE;
 
@@ -269,7 +267,7 @@ void clear_sku_board_ex(sku_board_ex *res)
 	}
 }
 
-int
+static int
 make_sku_board_ex(sku_board_ex *res, sku_board *orig)
 {
 	clear_sku_board_ex(res);
@@ -285,7 +283,7 @@ make_sku_board_ex(sku_board_ex *res, sku_board *orig)
 	return 0;
 }
 
-int
+static int
 find_most_certain_cell(sku_board_ex *sku, int *row, int *col)
 {
 	int most_certain = INT_MAX;
@@ -312,7 +310,7 @@ find_most_certain_cell(sku_board_ex *sku, int *row, int *col)
 	return 0;
 }
 
-int
+static int
 rethink_segments(sku_board_ex *sku, int seg_row_origin, int seg_col_origin, int number, bool cascade)
 {
 	for (int i = 1; i < 3; ++i) {
@@ -325,7 +323,7 @@ rethink_segments(sku_board_ex *sku, int seg_row_origin, int seg_col_origin, int 
 	return 0;
 }
 
-int
+static int
 rethink_segment(sku_board_ex *sku, int seg_row, int seg_col, int number, bool cascade)
 {
 	unsigned num_bit = 1 << number;
@@ -366,7 +364,7 @@ rethink_segment(sku_board_ex *sku, int seg_row, int seg_col, int number, bool ca
 	return 0;
 }
 
-int
+static int
 mask_cell_opts(sku_board_ex *sku, int row, int col, unsigned mask)
 {
 	unsigned new_opts = (sku->cell_opts[row][col] &= mask);
@@ -378,7 +376,8 @@ mask_cell_opts(sku_board_ex *sku, int row, int col, unsigned mask)
 	return 0;
 }
 
-int input_sku_number(sku_board_ex *sku, int row, int col, int number, bool cascade)
+static int
+input_sku_number(sku_board_ex *sku, int row, int col, int number, bool cascade)
 {
 	if (number == 0)
 		return 0;
@@ -428,7 +427,7 @@ int input_sku_number(sku_board_ex *sku, int row, int col, int number, bool casca
 	return 0;
 }
 
-void
+static void
 sku_log(const char *fmt, ...)
 {
 	if (!opts.verbose)
